@@ -1,7 +1,11 @@
 package com.clone.instagram.authservice.payload;
 
+import com.clone.instagram.authservice.model.User;
 import lombok.Builder;
 import lombok.Data;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @Builder

@@ -1,10 +1,15 @@
 package com.clone.instagram.authservice.payload;
 
+import com.clone.instagram.authservice.model.Contact;
+import com.clone.instagram.authservice.model.User;
 import lombok.Data;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Stack;
 
 @Data
 public class SignUpRequest {
@@ -28,4 +33,6 @@ public class SignUpRequest {
 
     @NotBlank
     private String profilePicUrl;
+
+    private ArrayList<Contact> contacts;
 }

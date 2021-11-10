@@ -56,6 +56,7 @@ public class AuthEndpoint {
                         .displayName(payload.getName())
                         .profilePictureUrl(payload.getProfilePicUrl())
                         .build())
+                .contacts(payload.getContacts())
                 .build();
 
         try {
