@@ -31,7 +31,7 @@ public class User {
         this.active = user.active;
         this.userProfile = user.userProfile;
         this.roles = user.roles;
-        this.contacts = new ArrayList<Contact>();
+        this.contacts = user.contacts;
     }
 
     public User(String username, String password, String email) {
@@ -40,6 +40,7 @@ public class User {
         this.email = email;
         this.active = true;
         this.roles = new HashSet<>() {{ new Role("USER"); }};
+        this.contacts = new ArrayList<>();
     }
 
     @Id
@@ -69,5 +70,5 @@ public class User {
     private Profile userProfile;
     private Set<Role> roles;
 
-    private ArrayList<Contact> contacts;
+    private List<User> contacts;
 }

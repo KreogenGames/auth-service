@@ -3,6 +3,7 @@ package com.clone.instagram.authservice.service;
 import com.clone.instagram.authservice.exception.ContactAlreadyExistsException;
 import com.clone.instagram.authservice.model.Contact;
 import com.clone.instagram.authservice.repository.ContactRepository;
+import com.clone.instagram.authservice.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,12 +16,13 @@ import java.util.Optional;
 @Slf4j
 public class ContactService {
     @Autowired private ContactRepository contactRepository;
+    @Autowired private UserRepository userRepository;
 
     public Contact addUserToContacts(String username, Contact contact) {
         log.info("adding contact {} for user {}", contact.getContactId(), username);
 
-        if(contactRepository.existsByFriendName(contact.getFriendName())){
-            log.warn("Contact {} for {} already exists", contact.getContactId(), username);
+        if(contactRepository.existsByFriendNameAndContactOwnerName(contact.getFriendName(), contact.getContactOwnerName())){
+            log.warn("Contact {} for {} already exists", contact.getFriendName(), username);
 
             throw new ContactAlreadyExistsException(
                     String.format("Contact %s already exists", contact.getFriendName()));
@@ -42,6 +44,16 @@ public class ContactService {
     public Optional<Contact> findByContactOwnerName(String contactOwnerName) {
         log.info("retrieving contacts belonging to {}", contactOwnerName);
         return contactRepository.findByContactOwnerName(contactOwnerName);
+    }
+
+    public Optional<Contact> findByFriendNameAndContactOwnerName(String friendName, String contactOwnerName) {
+        log.info("retrieving contact {} belonging to {}", friendName, contactOwnerName);
+        return contactRepository.findByFriendNameAndContactOwnerName(friendName,contactOwnerName);
+    }
+
+    public Optional<Contact> findAllByContactOwnerName(String contactOwnerName) {
+        log.info("retrieving all contacts belonging to {}", contactOwnerName);
+        return contactRepository.findAllByContactOwnerName(contactOwnerName);
     }
 
     public Optional<Contact> findByFriendId(String id) {

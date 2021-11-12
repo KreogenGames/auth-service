@@ -1,7 +1,9 @@
 package com.clone.instagram.authservice.service;
 
+import com.clone.instagram.authservice.exception.ContactAlreadyExistsException;
 import com.clone.instagram.authservice.exception.EmailAlreadyExistsException;
 import com.clone.instagram.authservice.exception.UsernameAlreadyExistsException;
+import com.clone.instagram.authservice.exception.UsernameIsNotExistsException;
 import com.clone.instagram.authservice.model.Role;
 import com.clone.instagram.authservice.repository.ContactRepository;
 import com.clone.instagram.authservice.repository.UserRepository;
@@ -57,9 +59,38 @@ public class UserService {
         return userRepository.save(user);
     }
 
+
+    public User addContact(String userName, String friendName){
+        log.info("adding contact {} to user {}", friendName, userName);
+        User user = userRepository.getByUsername(userName);
+        if(Boolean.FALSE.equals(userRepository.existsByUsername(userName))){
+            log.warn("username {} isn't exists.", userName);
+            throw new UsernameIsNotExistsException(
+                    String.format("username %s isn't exists", userName));
+        } else if(user.getContacts().contains(userRepository.getByUsername(friendName))){
+            log.warn("contact {} is already exists.", friendName);
+            throw new ContactAlreadyExistsException(
+                    String.format("contact %s is already exists", friendName));
+        } else if(Boolean.TRUE.equals(userRepository.existsByUsername(friendName))) {
+            user.getContacts().add(userRepository.getByUsername(friendName));
+            log.info("user {} contacts {}", userName, user.getContacts().toString());
+
+        } else {
+            log.warn("user {} isn't exists.", friendName);
+            throw new UsernameIsNotExistsException(
+                    String.format("user %s isn't exists", friendName));
+        }
+
+        return userRepository.save(user);
+    }
+
     public List<User> findAll() {
         log.info("retrieving all users");
         return userRepository.findAll();
+    }
+
+    public List<User> getAllContacts(String userName){
+        return userRepository.getByUsername(userName).getContacts();
     }
 
     public Optional<User> findByUsername(String username) {

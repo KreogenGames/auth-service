@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.util.stream.Stream;
 
 
 @RestController
@@ -37,6 +38,43 @@ public class UserEndpoint {
                 .map(this::convertTo));
     }
 
+    @GetMapping(value = "/users/{username}/id", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> findUserId(@PathVariable("username") String username) {
+        log.info("retrieving id for user {}", username);
+
+        return  ResponseEntity.ok(userService
+                .findByUsername(username)
+                .stream()
+                .map(this::convertToId));
+    }
+
+    @PostMapping(value = "/users/{username}/contactlist/{friendname}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> addToContactList(@PathVariable("username") String username, @PathVariable("friendname") String friendname){
+        log.info("adding contacts to user {} List<User>", username);
+
+        try {
+            userService.addContact(username, friendname);
+        } catch (ContactAlreadyExistsException | UsernameIsNotExistsException e) {
+            throw new BadRequestException(e.getMessage());
+        }
+
+        URI location = ServletUriComponentsBuilder
+                .fromCurrentContextPath().path("/users/{username}/contactlist")
+                .buildAndExpand(username).toUri();
+
+        return ResponseEntity
+                .created(location)
+                .body(new ApiResponse(true,"Contact added successfully"));
+    }
+
+    @GetMapping(value = "/users/{username}/contactlist", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> showContactList(@PathVariable("username") String username) {
+        log.info("retrieving {}'s contacts List<User>", username);
+
+        return  ResponseEntity.ok(userService
+                .getAllContacts(username));
+    }
+
     @PostMapping(value = "/users/{username}/contacts/{friendname}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> addToContacts(@PathVariable("username") String username, @PathVariable("friendname") String friendname){
         log.info("adding contacts to user {} contact list", username);
@@ -45,6 +83,8 @@ public class UserEndpoint {
                 .contactOwnerName(username)
                 .friendName(friendname)
                 .build();
+
+
 
         try {
             contactService.addUserToContacts(username, contact);
@@ -67,7 +107,7 @@ public class UserEndpoint {
         log.info("retrieving {}'s contact {}", username, friendname);
 
         return  ResponseEntity.ok(contactService
-                .findByFriendName(friendname)
+                .findByFriendNameAndContactOwnerName(friendname, username)
                 .stream()
                 .map(this::convertTo));
     }
@@ -77,9 +117,16 @@ public class UserEndpoint {
         log.info("retrieving {}'s contacts", username);
 
         return  ResponseEntity.ok(contactService
-                .findByContactOwnerName(username)
+                .findAllByContactOwnerName(username));
+    }
+
+    @GetMapping(value = "/users/{username}/contacts/names", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getContactersNames(@PathVariable("username") String username) {
+        log.info("retrieving {}'s contacters names", username);
+        return  ResponseEntity.ok(contactService
+                .findAllByContactOwnerName(username)
                 .stream()
-                .map(this::convertTo));
+                .map(this::convertNames));
     }
 
     @GetMapping(value = "/users", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -112,6 +159,7 @@ public class UserEndpoint {
                 .username(userDetails.getUsername())
                 .name(userDetails.getUserProfile().getDisplayName())
                 .profilePicture(userDetails.getUserProfile().getProfilePictureUrl())
+                .contacts(userDetails.getContacts())
                 .build();
     }
 
@@ -132,6 +180,14 @@ public class UserEndpoint {
                 .username(user.getUsername())
                 .name(user.getUserProfile().getDisplayName())
                 .profilePicture(user.getUserProfile().getProfilePictureUrl())
+                .contacts(user.getContacts())
+                .build();
+    }
+
+    private UserSummary convertToId(User user) {
+        return UserSummary
+                .builder()
+                .id(user.getId())
                 .build();
     }
 
@@ -140,6 +196,13 @@ public class UserEndpoint {
                 .builder()
                 .contactId(contact.getContactId())
                 .contactOwnerName(contact.getContactOwnerName())
+                .friendName(contact.getFriendName())
+                .build();
+    }
+
+    private ContactSummary convertNames(Contact contact) {
+        return ContactSummary
+                .builder()
                 .friendName(contact.getFriendName())
                 .build();
     }
