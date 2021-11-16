@@ -40,7 +40,7 @@ public class User {
         this.email = email;
         this.active = true;
         this.roles = new HashSet<>() {{ new Role("USER"); }};
-        this.contacts = new ArrayList<>();
+        this.contacts = new ArrayList<User>();
     }
 
     @Id

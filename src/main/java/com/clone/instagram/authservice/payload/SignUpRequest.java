@@ -34,5 +34,5 @@ public class SignUpRequest {
     @NotBlank
     private String profilePicUrl;
 
-    private ArrayList<User> contacts;
+    private List<User> contacts;
 }

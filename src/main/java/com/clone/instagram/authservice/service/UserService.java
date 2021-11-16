@@ -55,24 +55,23 @@ public class UserService {
         user.setRoles(new HashSet<>() {{
             add(role);
         }});
-
         return userRepository.save(user);
     }
 
 
     public User addContact(String userName, String friendName){
         log.info("adding contact {} to user {}", friendName, userName);
-        User user = userRepository.getByUsername(userName);
+        User user = userRepository.findByUsername(userName).get();
         if(Boolean.FALSE.equals(userRepository.existsByUsername(userName))){
             log.warn("username {} isn't exists.", userName);
             throw new UsernameIsNotExistsException(
                     String.format("username %s isn't exists", userName));
-        } else if(user.getContacts().contains(userRepository.getByUsername(friendName))){
+        } else if(user.getContacts().contains(userRepository.findByUsername(friendName).get())){
             log.warn("contact {} is already exists.", friendName);
             throw new ContactAlreadyExistsException(
                     String.format("contact %s is already exists", friendName));
         } else if(Boolean.TRUE.equals(userRepository.existsByUsername(friendName))) {
-            user.getContacts().add(userRepository.getByUsername(friendName));
+            user.getContacts().add(userRepository.findByUsername(friendName).get());
             log.info("user {} contacts {}", userName, user.getContacts().toString());
 
         } else {
@@ -94,6 +93,11 @@ public class UserService {
     }
 
     public Optional<User> findByUsername(String username) {
+        log.info("retrieving user {}", username);
+        return userRepository.findByUsername(username);
+    }
+
+    public Optional<User> findContactsByUsernameList(String username) {
         log.info("retrieving user {}", username);
         return userRepository.findByUsername(username);
     }
