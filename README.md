@@ -1,4 +1,4 @@
-# JAVA_COURSEWORK_MESSENGER
+# auth-service
 
 <h1 align ="center">Итоговый вариант аутентификации веб-приложения "Мессенджер"</h1>
 
